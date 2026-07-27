@@ -13,12 +13,12 @@ const MenuItems = ({ setSidebarOpen }) => {
           onClick={() => setSidebarOpen(false)}
           className={({ isActive }) =>
             `px-3.5 py-2 flex items-center gap-3 rounded-xl ${
-              isActive ? "bg-indigo-50 text-indigo-700" : "hover:bg-gray-50"
+              isActive ? "bg-indigo-50 text-indigo-700" : "hover:bg-gray-300"
             }`
           }
         >
           <Icon className="w-5 h-5" />
-          <span>{label}</span>
+          {label}
         </NavLink>
       ))}
     </div>

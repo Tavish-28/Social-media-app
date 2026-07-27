@@ -6,6 +6,7 @@ import group_users from "./group_users.png";
 import { Home, MessageCircle, Search, UserIcon, Users } from "lucide-react";
 import sponsored_img from "./sponsored_img.png";
 import loginBg from "./loginBg.png";
+import tavishVro from "./tavishVro.png";
 
 export const assets = {
   loginBg,
@@ -15,6 +16,7 @@ export const assets = {
   bgImage,
   group_users,
   sponsored_img,
+  tavishVro,
 };
 
 export const menuItemsData = [
@@ -28,8 +30,8 @@ export const menuItemsData = [
 export const dummyUserData = {
   _id: "user_2zdFoZib5lNr614LgkONdD8WG32",
   email: "admin@example.com",
-  full_name: "John Warren",
-  username: "john_warren",
+  full_name: "TopG",
+  username: "TavishGolcha",
   bio: "🌍 Dreamer | 📚 Learner | 🚀 Doer\r\nExploring life one step at a time.\r\n✨ Staying curious. Creating with purpose.",
   profile_picture: sample_profile,
   cover_photo: sample_cover,
