@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { dummyStoriesData } from "../assets/assets";
 import { Plus } from "lucide-react";
+import moment from "moment";
 
 // import { Store} from "lucide-react";
 
@@ -25,7 +26,7 @@ const StoriesBar = () => {
               <Plus className="w-5 h-5 text-white" />
             </div>
             <p className="text-sm font-medium text-slate-700 text-center">
-              Create Story
+              Create swsStory
             </p>
           </div>
         </div>
@@ -44,7 +45,7 @@ const StoriesBar = () => {
               {story.content}
             </p>
             <p className="text-white absolute bottom-1 right-2 z-10 text-xs">
-              {story.createdAt}
+              {moment(story.createdAt).fromNow()}
             </p>
           </div>
         ))}
