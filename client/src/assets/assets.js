@@ -147,7 +147,7 @@ export const dummyPostsData = [
     updatedAt: "2025-07-16T05:54:31.191Z",
   },
   {
-    _id: "686e6d0407845749500c24cd",
+    _id: "686e6d0407",
     user: dummyUserData,
     content:
       "Unlock your potential—every small step counts. Stay consistent, stay focused, and trust the process. Growth takes time, but every day is a new chance to be better than yesterday. 🌱✨\r\n\r\n#Motivation #GrowthMindset #DailyInspiration #StayFocused #LevelUp #PositiveVibes #KeepGoing #SelfImprovement #MindsetMatters #SuccessJourney",

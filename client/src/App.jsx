@@ -18,10 +18,7 @@ function App() {
   const { user } = useUser();
   return (
     <Routes>
-      <Route path="/" element={!user ? <Login /> : <LayOut />} />
-      <Route path="/sign-in/*" element={<SignInPage />} />
-      <Route path="/sign-up/*" element={<SignUpPage />} />
-      <Route path="/app" element={<LayOut />}>
+      <Route path="/" element={!user ? <Login /> : <LayOut />}>
         <Route index element={<Feed />} />
         <Route path="messages" element={<Messages />} />
         <Route path="messages/chats" element={<ChatBot />} />
@@ -30,6 +27,8 @@ function App() {
         <Route path="connections" element={<Connections />} />
         <Route path="create-post" element={<CreatePost />} />
       </Route>
+      <Route path="/sign-in/*" element={<SignInPage />} />
+      <Route path="/sign-up/*" element={<SignUpPage />} />
     </Routes>
   );
 }

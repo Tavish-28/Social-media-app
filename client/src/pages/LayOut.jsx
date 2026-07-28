@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import SideBar from "../components/SideBar";
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import { dummyUserData } from "../assets/assets";
 import { Menu } from "lucide-react";
 import { X } from "lucide-react";
@@ -22,7 +22,7 @@ const LayOut = () => {
         />
       ) : (
         <Menu
-          className="absolute top-3 right-3 p-2 z-100 bg-white rounded-md shadow w-10 h-10 text-gray-100 border-b-cyan-800 sm:hidden"
+          className="absolute top-3 right-3 p-2 z-100 bg-amber-200 rounded-md shadow w-10 h-10 text-gray-100 border-b-cyan-800 sm:hidden"
           onClick={() => setSidebarOpen(true)}
         />
       )}
