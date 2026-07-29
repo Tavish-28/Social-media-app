@@ -100,7 +100,7 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          // herer buttons login and signup
+
           <div className="space-y-4">
             <SignInButton mode="modal">
               <button

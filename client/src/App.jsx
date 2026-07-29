@@ -12,24 +12,28 @@ import Login from "./pages/Login";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
 import { useUser } from "@clerk/clerk-react";
+import { Toaster } from "react-hot-toast";
 // import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 
 function App() {
   const { user } = useUser();
   return (
-    <Routes>
-      <Route path="/" element={!user ? <Login /> : <LayOut />}>
-        <Route index element={<Feed />} />
-        <Route path="messages" element={<Messages />} />
-        <Route path="messages/chats" element={<ChatBot />} />
-        <Route path="discover" element={<Discover />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="connections" element={<Connections />} />
-        <Route path="create-post" element={<CreatePost />} />
-      </Route>
-      <Route path="/sign-in/*" element={<SignInPage />} />
-      <Route path="/sign-up/*" element={<SignUpPage />} />
-    </Routes>
+    <>
+      <Toaster />
+      <Routes>
+        <Route path="/" element={!user ? <Login /> : <LayOut />}>
+          <Route index element={<Feed />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="messages/chats" element={<ChatBot />} />
+          <Route path="discover" element={<Discover />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="connections" element={<Connections />} />
+          <Route path="create-post" element={<CreatePost />} />
+        </Route>
+        <Route path="/sign-in/*" element={<SignInPage />} />
+        <Route path="/sign-up/*" element={<SignUpPage />} />
+      </Routes>
+    </>
   );
 }
 

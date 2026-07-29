@@ -21,3 +21,6 @@
 .hover-wiggle:hover {
   animation: wiggle 0.35s ease-in-out;
 }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
