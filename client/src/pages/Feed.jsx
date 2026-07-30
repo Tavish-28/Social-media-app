@@ -3,6 +3,8 @@ import { dummyPostsData } from "../assets/assets";
 import Loading from "../components/Loading";
 import StoriesBar from "../components/StoriesBar";
 import PostCard from "../components/PostCards";
+import { assets } from "../assets/assets";
+import RecentMessages from "../components/RecentMessages";
 const Feed = () => {
   const [feeds, setfeeds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,16 +23,26 @@ const Feed = () => {
         <StoriesBar />
         <div className="p-4 space-y-6">
           {feeds.map((post) => (
-            <PostCard key={post} />
+            <PostCard key={post._id} post={post} />
           ))}
         </div>
       </div>
       {/**Right Sidebar */}
-      <div>
-        <div>
-          <h1>Sponsered</h1>
+      <div className="max-xl:hidden sticky top-0">
+        <div className="max-w-xs bg-white text-xs p-4 rounded-md inline-flex flex-col gap-2 shadow">
+          <h1 className="text-slate-800 font-semibold">Sponsered</h1>
+          <img
+            src={assets.sponsored_img}
+            className="w-75 h-50 rounded-md "
+            alt=""
+          />
+          <p className="text-slate-600 ">Email marketing</p>
+          <p className="text-slate-400">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis
+            quidem quis in.
+          </p>
         </div>
-        <h1>Recent messages</h1>
+        <RecentMessages />
       </div>
     </div>
   ) : (
