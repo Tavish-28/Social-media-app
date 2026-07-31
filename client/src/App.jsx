@@ -24,7 +24,7 @@ function App() {
         <Route path="/" element={!user ? <Login /> : <LayOut />}>
           <Route index element={<Feed />} />
           <Route path="messages" element={<Messages />} />
-          <Route path="messages/chats" element={<ChatBot />} />
+          <Route path="message/chats" element={<ChatBot />} />
           <Route path="discover" element={<Discover />} />
           <Route path="profile" element={<Profile />} />
           <Route path="connections" element={<Connections />} />
