@@ -91,7 +91,7 @@ const ChatBot = () => {
 
         {/* Input Area */}
         <div className="border-t bg-white p-4">
-          <div className="max-w-4xl mx-auto flex items-center gap-3">
+          <div className="max-w-4xl mx-auto  items-center gap-3">
             <input
               type="text"
               placeholder="Type a message..."
