@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { config } from "dotenv";
 import connectDB from "./configs/db.js";
 import { inngest, functions } from "./routes/ingest.js";
+import serve from "inngest/express";
 
 const app = express();
 await connectDB();
