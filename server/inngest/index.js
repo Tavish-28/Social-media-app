@@ -1,11 +1,14 @@
 import { Inngest } from "inngest";
-import { serve } from "inngest/express";
+// import { serve } from "inngest/express";
+import User from "../models/User.js";
+import dotenv from "dotenv";
+
+// dotenv.config();
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "my-app" });
 const syncUserCreation = inngest.createFunction(
-  { id: "sync-user-from-clerk" },
-  { event: "clerk/user.created" },
+  { id: "sync-user-from-clerk", triggers: [{ event: "clerk/user.created" }] },
   async ({ event }) => {
     const { id, first_name, last_name, email_addresses, image_url } =
       event.data;
@@ -30,12 +33,14 @@ const syncUserCreation = inngest.createFunction(
   },
 );
 const syncUserUpdate = inngest.createFunction(
-  { id: "sync-user-from-clerk" },
-  { event: "clerk/user.updated" },
+  {
+    id: "sync-user-update-from-clerk",
+    triggers: [{ event: "clerk/user.updated" }],
+  },
   async ({ event }) => {
     const { id, first_name, last_name, email_addresses, image_url } =
       event.data;
-    
+
     const updatedUserData = {
       // _id: id,
       email: email_addresses[0].email_address,
@@ -47,8 +52,10 @@ const syncUserUpdate = inngest.createFunction(
   },
 );
 const syncUserDeletion = inngest.createFunction(
-  { id: "delete-user-from-clerk" },
-  { event: "clerk/user.deleted" },
+  {
+    id: "delete-user-from-clerk",
+    triggers: [{ event: "clerk/user.deleted" }],
+  },
   async ({ event }) => {
     const { id } = event.data;
     await User.findByIdAndDelete({ _id: id });
