@@ -23,12 +23,13 @@ const syncUserCreation = inngest.createFunction(
     }
 
     const userData = {
-      _id: id,
+      id,
       email: email_addresses[0].email_address,
-      full_name: first_name + " " + last_name,
-      profile_photo: image_url,
+      full_name: `${first_name} ${last_name}`,
+      profile_picture: image_url,
       username,
     };
+
     await User.create(userData);
   },
 );
@@ -45,10 +46,10 @@ const syncUserUpdate = inngest.createFunction(
       // _id: id,
       email: email_addresses[0].email_address,
       full_name: first_name + " " + last_name,
-      profile_photo: image_url,
+      profile_picture: image_url,
       // username,
     };
-    await User.findByIdAndUpdate({ _id: id }, updatedUserData);
+    await User.findOneAndUpdate({ id }, updatedUserData);
   },
 );
 const syncUserDeletion = inngest.createFunction(
