@@ -11,12 +11,17 @@ import CreatePost from "./pages/CreatePost";
 import Login from "./pages/Login";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { Toaster } from "react-hot-toast";
 // import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 
 function App() {
   const { user } = useUser();
+  const { getToken } = useAuth();
+  useEffect(() => {
+    getToken().then((token) => console.log(token));
+  }, [getToken]);
+
   return (
     <>
       <Toaster />

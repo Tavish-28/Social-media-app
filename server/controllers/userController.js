@@ -1,9 +1,6 @@
 import User from "../models/User.js";
 import fs from "fs";
 import imagekit from "../configs/imagekit.js";
-import { uploadFile } from "../utils/uploadFile.js";
-import { upload } from "../configs/multer.js";
-import { format } from "path";
 
 // Get User Data using userId
 export const getUserData = async (req, res) => {

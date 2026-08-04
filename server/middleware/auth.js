@@ -6,6 +6,6 @@ export const protect = async (req, res, next) => {
     }
     next();
   } catch (err) {
-    return res.json({ success: false, message: error.message });
+    return res.json({ success: false, message: err.message });
   }
 };
