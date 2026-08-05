@@ -11,17 +11,12 @@ import CreatePost from "./pages/CreatePost";
 import Login from "./pages/Login";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
-import { useUser, useAuth } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 import { Toaster } from "react-hot-toast";
-import { useEffect } from "react";
 // import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 
 function App() {
   const { user } = useUser();
-  const { getToken } = useAuth();
-  useEffect(() => {
-    getToken().then((token) => console.log(token));
-  }, [getToken]);
 
   return (
     <>
@@ -33,6 +28,7 @@ function App() {
           <Route path="message/chats" element={<ChatBot />} />
           <Route path="discover" element={<Discover />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="profile/:profileId" element={<Profile />} />
           <Route path="connections" element={<Connections />} />
           <Route path="create-post" element={<CreatePost />} />
         </Route>

@@ -14,11 +14,11 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
       setProgress(0);
 
       const intervalTime = 100;
-      let elapsed = 20;
+      let elapsed = 0;
 
       progressInterval = setInterval(() => {
         elapsed += intervalTime;
-        setProgress((elapsed / duration) * 300);
+        setProgress((elapsed / duration) * 100);
       }, intervalTime);
 
       timer = setTimeout(() => {

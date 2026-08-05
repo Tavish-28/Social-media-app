@@ -53,9 +53,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             onClick={signOut}
             className="w-4.5 text-gray-400 hover:text-gray-700 transition cursor-pointer"
           />
-          <div>
-            <h1>{user.full_name}</h1>
-          </div>
         </div>
       </div>
     </div>

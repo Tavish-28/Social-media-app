@@ -5,18 +5,11 @@ import { dummyUserData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 
 const PostCard = ({ post }) => {
-  // Highlight hashtags
-  const postWithHashtag = post.content?.replace(
-    /(#\w+)/g,
-    '<span class="text-indigo-600 font-medium">$1</span>',
-  );
-
   const currentUser = dummyUserData;
-  const handleLike = async () => {};
   const navigate = useNavigate();
 
   // likes should be an array of user IDs
-  const [likes, setLikes] = useState(post.likes || []);
+  const [likes, setLikes] = useState(post.likes || post.likes_count || []);
 
   const handleLikes = () => {
     if (likes.includes(currentUser._id)) {
@@ -30,7 +23,7 @@ const PostCard = ({ post }) => {
     <div className="bg-white rounded-xl shadow p-4 space-y-4 w-full max-w-2xl">
       {/* User Info */}
       <div
-        onClick={() => navigate("/profile/") + post.user._id}
+        onClick={() => navigate(`/profile/${post.user._id}`)}
         className="flex items-center gap-3 cursor-pointer"
       >
         <img
@@ -56,10 +49,17 @@ const PostCard = ({ post }) => {
 
       {/* Content */}
       {post.content && (
-        <div
-          className="text-gray-800 text-sm whitespace-pre-line"
-          dangerouslySetInnerHTML={{ __html: postWithHashtag }}
-        />
+        <div className="text-gray-800 text-sm whitespace-pre-line">
+          {post.content.split(/(#\w+)/g).map((part, index) =>
+            /^#\w+$/.test(part) ? (
+              <span key={index} className="text-indigo-600 font-medium">
+                {part}
+              </span>
+            ) : (
+              part
+            ),
+          )}
+        </div>
       )}
 
       {/* Images */}

@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   const user = dummyUserData;
   const handleSubmit = async () => {};
@@ -82,7 +81,6 @@ const CreatePost = () => {
               onChange={(e) => setImages([...images, ...e.target.files])}
             />
             <button
-              disabled={loading}
               onClick={() =>
                 toast.promise(handleSubmit(), {
                   loading: "uploading...",

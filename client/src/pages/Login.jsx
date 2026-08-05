@@ -1,22 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { assets } from "../assets/assets";
-import { Star } from "lucide-react";
 import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    console.log({
-      email,
-      password,
-    });
-  };
-
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center px-4"
@@ -57,53 +44,11 @@ const Login = () => {
 
         {/* Form */}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <input
-            type="email"
-            placeholder="Email Address"
-            className="
-            w-full
-            p-4
-            rounded-xl
-            bg-[#1E293B]
-            border
-            border-slate-700
-            text-white
-            placeholder:text-slate-400
-            outline-none
-            transition
-            focus:border-blue-500
-            focus:ring-2
-            focus:ring-blue-500
-            "
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="
-            w-full
-            p-4
-            rounded-xl
-            bg-[#1E293B]
-            border
-            border-slate-700
-            text-white
-            placeholder:text-slate-400
-            outline-none
-            transition
-            focus:border-blue-500
-            focus:ring-2
-            focus:ring-blue-500
-            "
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
+        <div className="space-y-5">
           <div className="space-y-4">
             <SignInButton mode="modal">
               <button
+                type="button"
                 className="
       w-full
       py-4
@@ -123,6 +68,7 @@ const Login = () => {
 
             <SignUpButton mode="modal">
               <button
+                type="button"
                 className="
       w-full
       py-4
@@ -140,12 +86,12 @@ const Login = () => {
               </button>
             </SignUpButton>
           </div>
-        </form>
+        </div>
 
         <p className="text-center text-slate-400 mt-8">
           Don't have an account?{" "}
           <Link
-            to="/signup"
+            to="/sign-up"
             className="text-blue-400 hover:text-blue-300 font-semibold"
           >
             Sign Up

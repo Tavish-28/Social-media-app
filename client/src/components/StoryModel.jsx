@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { TextIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
-const StoryModel = ({ setShowModel, fetchStories }) => {
+const StoryModel = ({ setShowModel }) => {
   const bgColors = [
     "#4f46e5",
     "#7c3aed",
@@ -69,7 +69,7 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
             ) : (
               <video
                 src={previewUrl}
-                cosntrols
+                controls
                 className="object-contain max-h-full"
               ></video>
             ))}

@@ -59,16 +59,16 @@ const ChatBot = () => {
                 <div
                   key={index}
                   className={`flex flex-col ${
-                    message.to_user_id !== user._id
-                      ? "items-start"
-                      : "items-end"
+                    message.from_user_id === user._id
+                      ? "items-end"
+                      : "items-start"
                   }`}
                 >
                   <div
                     className={`p-2 text-sm max-w-sm bg-white text-slate-700 rounded-lg shadow ${
-                      message.to_user_id !== user._id
-                        ? "rounded-bl-none"
-                        : "rounded-br-none"
+                      message.from_user_id === user._id
+                        ? "rounded-br-none"
+                        : "rounded-bl-none"
                     }`}
                   >
                     {message.message_type === "image" && (
@@ -91,7 +91,7 @@ const ChatBot = () => {
 
         {/* Input Area */}
         <div className="border-t bg-white p-4">
-          <div className="max-w-4xl mx-auto  items-center gap-3">
+          <div className="max-w-4xl mx-auto flex items-center gap-3">
             <input
               type="text"
               placeholder="Type a message..."

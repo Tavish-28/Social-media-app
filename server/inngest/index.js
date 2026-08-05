@@ -1,9 +1,7 @@
 import { Inngest } from "inngest";
-// import { serve } from "inngest/express";
 import User from "../models/User.js";
-import dotenv from "dotenv";
-
-// dotenv.config();
+import Connection from "../models/Connection.js";
+import sendEmail from "../configs/nodeMailer.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "my-app" });
@@ -63,4 +61,44 @@ const syncUserDeletion = inngest.createFunction(
   },
 );
 // Create an empty array where we'll export future Inngest functions
-export const functions = [syncUserCreation, syncUserUpdate, syncUserDeletion];
+// Inngest Function to send Reminder when a new connection request is added
+const sendNewConnectionRequestReminder = inngest.createFunction(
+  {
+    id: "send-new-connection-request-reminder",
+    triggers: [{ event: "app/connection-request" }],
+  },
+  async ({ event, step }) => {
+    const { connectionId } = event.data;
+
+    const connection = await step.run("get-connection", async () => {
+      return Connection.findById(connectionId).lean();
+    });
+
+    if (!connection) return { sent: false, reason: "Connection not found" };
+
+    const [fromUser, toUser] = await step.run("get-users", async () => {
+      return Promise.all([
+        User.findOne({ id: connection.from_user_id }).lean(),
+        User.findOne({ id: connection.to_user_id }).lean(),
+      ]);
+    });
+
+    if (!fromUser || !toUser) return { sent: false, reason: "User not found" };
+
+    await step.run("send-connection-request-mail", async () => {
+      return sendEmail({
+        to: toUser.email,
+        subject: "You have a new connection request",
+        body: `<p><strong>${fromUser.full_name}</strong> sent you a connection request.</p>`,
+      });
+    });
+
+    return { sent: true };
+  },
+);
+export const functions = [
+  syncUserCreation,
+  syncUserUpdate,
+  syncUserDeletion,
+  sendNewConnectionRequestReminder,
+];
