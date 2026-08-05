@@ -13,6 +13,7 @@ import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { Toaster } from "react-hot-toast";
+import { useEffect } from "react";
 // import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 
 function App() {

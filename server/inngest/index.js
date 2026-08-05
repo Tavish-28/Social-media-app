@@ -59,7 +59,7 @@ const syncUserDeletion = inngest.createFunction(
   },
   async ({ event }) => {
     const { id } = event.data;
-    await User.findByIdAndDelete({ _id: id });
+    await User.findOneAndDelete({ id });
   },
 );
 // Create an empty array where we'll export future Inngest functions

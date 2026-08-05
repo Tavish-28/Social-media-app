@@ -2,3 +2,8 @@
 node_modules
 
 { mongo db/*social_media_app ->tavish@2005*/}
+server/.gitignore
+client/src/pages/ChatGPT Installer.exe
+client/src/pages/Microsoft.Services.Store.winmd
+server/.gitignore
+.gitignore

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 const userSchema = new mongoose.Schema(
   {
     id: {
@@ -18,18 +19,41 @@ const userSchema = new mongoose.Schema(
     username: {
       type: String,
       unique: true,
+      default: "",
     },
     bio: {
       type: String,
-      default: "hey tere i am using messag",
+      default: "Hey there! I am using Messag.",
     },
     profile_picture: {
       type: String,
       default: "",
     },
+    cover_photo: {
+      type: String,
+      default: "",
+    },
+    location: {
+      type: String,
+      default: "",
+    },
+    followers: [
+      {
+        type: String,
+      },
+    ],
+    following: [
+      {
+        type: String,
+      },
+    ],
   },
-  { timestamps: true, minimize: false },
+  {
+    timestamps: true,
+    minimize: false,
+  },
 );
 
 const User = mongoose.model("User", userSchema);
+
 export default User;
