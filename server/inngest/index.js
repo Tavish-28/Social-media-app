@@ -3,8 +3,32 @@ import User from "../models/User.js";
 import Connection from "../models/Connection.js";
 import sendEmail from "../configs/nodeMailer.js";
 
-// Create a client to send and receive events
 export const inngest = new Inngest({ id: "my-app" });
+
+const getConnectionParticipants = async (connectionId) => {
+  const connection = await Connection.findById(connectionId).lean();
+  if (!connection) return null;
+
+  const [fromUser, toUser] = await Promise.all([
+    User.findOne({ id: connection.from_user_id }).lean(),
+    User.findOne({ id: connection.to_user_id }).lean(),
+  ]);
+
+  if (!fromUser || !toUser) return null;
+  return { connection, fromUser, toUser };
+};
+
+const buildConnectionEmail = (fromUser, toUser) => ({
+  subject: "New connection request",
+  body: `<div style="font-family: Arial, sans-serif; padding: 20px;">
+  <h2>Hi ${toUser.full_name},</h2>
+  <p>You have a new connection request from ${fromUser.full_name} - @${fromUser.username}</p>
+  <p>Click <a href="${process.env.FRONTEND_URL}/connections" style="color: #10b981;">here</a> to accept or reject the request.</p>
+  <br/>
+  <p>Thanks,<br/>PingUp - Stay Connected</p>
+</div>`,
+});
+
 const syncUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk", triggers: [{ event: "clerk/user.created" }] },
   async ({ event }) => {
@@ -12,25 +36,22 @@ const syncUserCreation = inngest.createFunction(
       event.data;
 
     let username = email_addresses[0].email_address.split("@")[0];
-
-    // Check availability of the username
     const user = await User.findOne({ username });
 
     if (user) {
       username = username + Math.floor(Math.random() * 10000);
     }
 
-    const userData = {
+    await User.create({
       id,
       email: email_addresses[0].email_address,
       full_name: `${first_name} ${last_name}`,
       profile_picture: image_url,
       username,
-    };
-
-    await User.create(userData);
+    });
   },
 );
+
 const syncUserUpdate = inngest.createFunction(
   {
     id: "sync-user-update-from-clerk",
@@ -40,16 +61,17 @@ const syncUserUpdate = inngest.createFunction(
     const { id, first_name, last_name, email_addresses, image_url } =
       event.data;
 
-    const updatedUserData = {
-      // _id: id,
-      email: email_addresses[0].email_address,
-      full_name: first_name + " " + last_name,
-      profile_picture: image_url,
-      // username,
-    };
-    await User.findOneAndUpdate({ id }, updatedUserData);
+    await User.findOneAndUpdate(
+      { id },
+      {
+        email: email_addresses[0].email_address,
+        full_name: `${first_name} ${last_name}`,
+        profile_picture: image_url,
+      },
+    );
   },
 );
+
 const syncUserDeletion = inngest.createFunction(
   {
     id: "delete-user-from-clerk",
@@ -57,11 +79,15 @@ const syncUserDeletion = inngest.createFunction(
   },
   async ({ event }) => {
     const { id } = event.data;
-    await User.findOneAndDelete({ id });
+    await Promise.all([
+      User.findOneAndDelete({ id }),
+      Connection.deleteMany({
+        $or: [{ from_user_id: id }, { to_user_id: id }],
+      }),
+    ]);
   },
 );
-// Create an empty array where we'll export future Inngest functions
-// Inngest Function to send Reminder when a new connection request is added
+
 const sendNewConnectionRequestReminder = inngest.createFunction(
   {
     id: "send-new-connection-request-reminder",
@@ -70,32 +96,45 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
   async ({ event, step }) => {
     const { connectionId } = event.data;
 
-    const connection = await step.run("get-connection", async () => {
-      return Connection.findById(connectionId).lean();
-    });
-
-    if (!connection) return { sent: false, reason: "Connection not found" };
-
-    const [fromUser, toUser] = await step.run("get-users", async () => {
-      return Promise.all([
-        User.findOne({ id: connection.from_user_id }).lean(),
-        User.findOne({ id: connection.to_user_id }).lean(),
-      ]);
-    });
-
-    if (!fromUser || !toUser) return { sent: false, reason: "User not found" };
+    const request = await step.run("get-connection-request", () =>
+      getConnectionParticipants(connectionId),
+    );
+    if (!request || request.connection.status !== "pending") {
+      return { sent: false, reason: "Connection request is unavailable" };
+    }
 
     await step.run("send-connection-request-mail", async () => {
-      return sendEmail({
-        to: toUser.email,
-        subject: "You have a new connection request",
-        body: `<p><strong>${fromUser.full_name}</strong> sent you a connection request.</p>`,
-      });
+      const { subject, body } = buildConnectionEmail(
+        request.fromUser,
+        request.toUser,
+      );
+      await sendEmail({ to: request.toUser.email, subject, body });
+    });
+
+    await step.sleepUntil(
+      "wait-for-24-hours",
+      new Date(Date.now() + 24 * 60 * 60 * 1000),
+    );
+
+    const reminder = await step.run("get-pending-connection-request", () =>
+      getConnectionParticipants(connectionId),
+    );
+    if (!reminder || reminder.connection.status !== "pending") {
+      return { sent: false, reason: "Connection request was already handled" };
+    }
+
+    await step.run("send-connection-request-reminder", async () => {
+      const { subject, body } = buildConnectionEmail(
+        reminder.fromUser,
+        reminder.toUser,
+      );
+      await sendEmail({ to: reminder.toUser.email, subject, body });
     });
 
     return { sent: true };
   },
 );
+
 export const functions = [
   syncUserCreation,
   syncUserUpdate,

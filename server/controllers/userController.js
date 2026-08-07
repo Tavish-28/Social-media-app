@@ -314,7 +314,9 @@ export const sendConnectionRequest = async (req, res) => {
         name: "app/connection-request",
         data: { connectionId: newConnection.id },
       })
-      .catch((error) => console.error("Could not queue connection email:", error));
+      .catch((error) =>
+        console.error("Could not queue connection email:", error),
+      );
 
     return res.status(201).json({
       success: true,
@@ -334,7 +336,9 @@ export const getUserConnections = async (req, res) => {
     const { userId } = req.auth();
     const user = await User.findOne({ id: userId });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const [acceptedConnections, pendingRequests] = await Promise.all([
@@ -353,7 +357,9 @@ export const getUserConnections = async (req, res) => {
     const pendingIds = pendingRequests.map(
       (connection) => connection.from_user_id,
     );
-    const people = await User.find({ id: { $in: [...connectionIds, ...pendingIds] } });
+    const people = await User.find({
+      id: { $in: [...connectionIds, ...pendingIds] },
+    });
     const peopleById = new Map(people.map((person) => [person.id, person]));
 
     const connections = connectionIds
@@ -406,7 +412,9 @@ export const acceptConnectionRequest = async (req, res) => {
       User.findOne({ id: userId }),
     ]);
     if (!fromUser || !toUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     connection.status = "accepted";
