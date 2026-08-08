@@ -3,6 +3,7 @@ import fs from "fs";
 import imagekit from "../configs/imagekit.js";
 import Connection from "../models/Connection.js";
 import { inngest } from "../inngest/index.js";
+import Post from "../models/Post.js";
 
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // Get User Data
@@ -420,6 +421,25 @@ export const acceptConnectionRequest = async (req, res) => {
     connection.status = "accepted";
     await connection.save();
     res.json({ success: true, message: "Connection accepted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//get user profiles
+export const acceptConnectionRequest = async (req, res) => {
+  try {
+    const { profile_id } = req.body();
+    const profile = await User.findById(profile_id);
+    if (!profile) {
+      return res.json({ success: false, message: "Profiles not found" });
+    }
+    const posts = await Post.find({ user: profile_id }).populate("user");
+    res.json({ success: true, profile, posts });
   } catch (error) {
     console.log(error);
     res.json({

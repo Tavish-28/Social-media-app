@@ -6,6 +6,8 @@ import { clerkMiddleware } from "@clerk/express";
 import { inngest, functions } from "./inngest/index.js";
 import { serve } from "inngest/express";
 import userRouter from "./routes/userRoutes.js";
+import postRouter from "./routes/postRoutes.js";
+import storyRouter from "./routes/storyRoutes.js";
 
 // dotenv.config();
 
@@ -36,6 +38,8 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
+app.use("/api/post", postRouter);
+app.use("/api/story", storyRouter);
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {

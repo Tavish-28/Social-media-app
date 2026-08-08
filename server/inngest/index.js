@@ -134,6 +134,24 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
     return { sent: true };
   },
 );
+//inngest fucntion to delete story in 24 hrs
+const deleteStory = inngest.createFunction(
+  { id: "story-delete" },
+  { event: "app/story.delete" },
+  async ({ event, step }) => {
+    const { storyId } = event.data;
+
+    const in24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await step.sleepUntil("wait-for-24-hours", in24Hours);
+
+    await step.run("delete-story", async () => {
+      await Story.findByIdAndDelete(storyId);
+
+      return { message: "Story deleted." };
+    });
+  },
+);
 
 export const functions = [
   syncUserCreation,
