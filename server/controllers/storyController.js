@@ -10,7 +10,7 @@ export const addUserStory = async (req, res) => {
     const media = req.file;
     let media_url = "";
     //upload mediato imagekit
-    if (media_type == "image" || media_type == "video") {
+    if (media_type === "image" || media_type === "video") {
       const fileBuffer = fs.readFileSync(media.path);
       const response = await imagekit.upload({
         file: fileBuffer,
@@ -26,8 +26,11 @@ export const addUserStory = async (req, res) => {
       media_type,
       background_color,
     });
-    // schedule story
-    await inngest.send({});
+    // schedule story deleteion after 24 hrs
+    await inngest.send({
+      name: "app/story.delete",
+      data: { storyId: story._id },
+    });
     res.json({ success: true });
   } catch (error) {
     console.log(error);

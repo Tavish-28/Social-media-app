@@ -262,8 +262,8 @@ export const sendConnectionRequest = async (req, res) => {
     }
 
     const [fromUser, toUser] = await Promise.all([
-      User.findOne({ id: userId }),
-      User.findOne({ id }),
+      User.findOne({ id: userId }), // jo bhej raha hai
+      User.findOne({ id }), //jise bheja
     ]);
 
     if (!fromUser || !toUser) {
@@ -310,7 +310,7 @@ export const sendConnectionRequest = async (req, res) => {
     });
 
     // A notification problem should not undo a successfully stored request.
-    void inngest
+    await inngest
       .send({
         name: "app/connection-request",
         data: { connectionId: newConnection.id },
