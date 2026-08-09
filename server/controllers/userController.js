@@ -430,15 +430,22 @@ export const acceptConnectionRequest = async (req, res) => {
   }
 };
 
-//get user profiles
-export const acceptConnectionRequest = async (req, res) => {
+// Get a user's public profile and posts.
+export const getUserProfiles = async (req, res) => {
   try {
-    const { profile_id } = req.body();
-    const profile = await User.findById(profile_id);
-    if (!profile) {
-      return res.json({ success: false, message: "Profiles not found" });
+    const { profile_id } = req.body;
+    if (!profile_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Profile ID is required",
+      });
     }
-    const posts = await Post.find({ user: profile_id }).populate("user");
+
+    const profile = await User.findOne({ id: profile_id });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found" });
+    }
+    const posts = await Post.find({ user: profile.id }).sort({ createdAt: -1 });
     res.json({ success: true, profile, posts });
   } catch (error) {
     console.log(error);

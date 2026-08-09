@@ -10,7 +10,7 @@ const storySchema = new mongoose.Schema(
       required: true,
     },
     view_count: [{ type: String, ref: "User" }],
-    backgroud_color: { type: String },
+    background_color: { type: String },
   },
   {
     timestamps: true,

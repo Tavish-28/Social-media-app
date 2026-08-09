@@ -2,6 +2,8 @@ import { Inngest } from "inngest";
 import User from "../models/User.js";
 import Connection from "../models/Connection.js";
 import sendEmail from "../configs/nodeMailer.js";
+import Message from "../models/message.js";
+import Story from "../models/Story.js";
 
 export const inngest = new Inngest({ id: "my-app" });
 
@@ -136,8 +138,7 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
 );
 //inngest fucntion to delete story in 24 hrs
 const deleteStory = inngest.createFunction(
-  { id: "story-delete" },
-  { event: "app/story.delete" },
+  { id: "story-delete", triggers: [{ event: "app/story.delete" }] },
   async ({ event, step }) => {
     const { storyId } = event.data;
 
@@ -153,10 +154,51 @@ const deleteStory = inngest.createFunction(
   },
 );
 
+const sendNotiUnseenMsg = inngest.createFunction(
+  {
+    id: "send-unseen-msg-noti",
+    triggers: [{ cron: "TZ=America/New_York 0 9 * * *" }],
+  },
+  async () => {
+    const messages = await Message.find({ seen: false }).lean();
+    const unseenCount = {};
+    messages.map((message) => {
+      unseenCount[message.to_user_id] =
+        (unseenCount[message.to_user_id] || 0) + 1;
+    });
+
+    for (const userId in unseenCount) {
+      const user = await User.findOne({ id: userId });
+      if (!user) continue;
+
+      const subject = `📩 You have ${unseenCount[userId]} unseen messages`;
+
+      const body = `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Hi ${user.full_name},</h2>
+            <p>You have ${unseenCount[userId]} unseen messages</p>
+            <p>
+                Click <a href="${process.env.FRONTEND_URL}/messages"
+                style="color: #10b981;">here</a> to view them
+            </p>
+            <br/>
+            <p>Thanks,<br/>PingUp - Stay Connected</p>
+        </div>
+    `;
+      await sendEmail({
+        to: user.email,
+        subject,
+        body,
+      });
+    }
+    return { message: "Noti. sent" };
+  },
+);
 export const functions = [
   syncUserCreation,
   syncUserUpdate,
   syncUserDeletion,
   sendNewConnectionRequestReminder,
   deleteStory,
+  sendNotiUnseenMsg,
 ];
