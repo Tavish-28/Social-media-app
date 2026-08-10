@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { dummyPostsData, dummyUserData } from "../assets/assets";
 import { MapPin, Calendar, Users, FileText, Edit } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import api from "../api/axios";
 
 const Profile = () => {
   const currentUser = useSelector((state) => state.user.value);
@@ -15,15 +16,16 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("posts");
   const [showEdit, setShowEdit] = useState(false);
 
-  const fetchUser = async (profileId) => {
-    // Later replace with API call using profileId
+  const fetchProfile = useCallback(async (profileId) => {
+    if (!profileId) return;
+
     const token = await getToken();
     try {
       const { data } = await api.post(
         `/api/user/profiles`,
-        { profileId },
+        { profile_id: profileId },
         {
-          headers: { Authorization: `Bearer${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         },
       );
       if (data.success) {
@@ -35,15 +37,15 @@ const Profile = () => {
     } catch (error) {
       toast.error(error.message);
     }
-  };
+  }, [getToken]);
 
   useEffect(() => {
     if (profileId) {
-      fetchUser();
+      fetchProfile(profileId);
     } else {
-      fetchUser(currentUser);
+      fetchProfile(currentUser?._id);
     }
-  }, [profileId, currentUser]);
+  }, [profileId, currentUser?._id, fetchProfile]);
 
   if (!user) {
     return (
@@ -199,12 +201,21 @@ const Profile = () => {
 
                     <p className="mt-4 text-slate-700">{post.content}</p>
 
-                    {post.image && (
-                      <img
-                        src={post.image}
-                        alt=""
-                        className="mt-4 rounded-xl w-full max-h-[450px] object-cover"
-                      />
+                    {post.image_urls?.length > 0 && (
+                      <div className="grid grid-cols-2 gap-2 mt-4">
+                        {post.image_urls.map((imageUrl, index) => (
+                          <img
+                            key={imageUrl}
+                            src={imageUrl}
+                            alt={`Post image ${index + 1}`}
+                            className={`rounded-xl w-full object-cover ${
+                              post.image_urls.length === 1
+                                ? "col-span-2 max-h-[450px]"
+                                : "h-48"
+                            }`}
+                          />
+                        ))}
+                      </div>
                     )}
                   </div>
                 ))

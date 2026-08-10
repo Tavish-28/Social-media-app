@@ -433,7 +433,7 @@ export const acceptConnectionRequest = async (req, res) => {
 // Get a user's public profile and posts.
 export const getUserProfiles = async (req, res) => {
   try {
-    const { profile_id } = req.body;
+    const profile_id = req.body.profile_id || req.body.profileId;
     if (!profile_id) {
       return res.status(400).json({
         success: false,
@@ -441,7 +441,12 @@ export const getUserProfiles = async (req, res) => {
       });
     }
 
-    const profile = await User.findOne({ id: profile_id });
+    const profileQuery = [{ id: profile_id }];
+    if (/^[0-9a-fA-F]{24}$/.test(profile_id)) {
+      profileQuery.push({ _id: profile_id });
+    }
+
+    const profile = await User.findOne({ $or: profileQuery });
     if (!profile) {
       return res.status(404).json({ success: false, message: "Profile not found" });
     }

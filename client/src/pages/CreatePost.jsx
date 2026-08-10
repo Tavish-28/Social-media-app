@@ -1,14 +1,53 @@
 import React, { useState } from "react";
-import { dummyUserData } from "../assets/assets";
 import { Image, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../api/axios";
+import Loading from "../components/Loading";
+
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
 
   const user = useSelector((state) => state.user.value);
-  const handleSubmit = async () => {};
+  const { getToken } = useAuth();
+
+  const handleSubmit = async () => {
+    if (!content.trim() && images.length === 0) {
+      throw new Error("Add text or an image before publishing");
+    }
+
+    const formData = new FormData();
+    formData.append("content", content.trim());
+    formData.append(
+      "post_type",
+      images.length > 0
+        ? content.trim()
+          ? "text_with_image"
+          : "image"
+        : "text",
+    );
+    images.forEach((image) => formData.append("images", image));
+
+    const token = await getToken();
+    const { data } = await api.post("/api/post/add", formData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!data.success) {
+      throw new Error(data.message || "Post not added");
+    }
+
+    setContent("");
+    setImages([]);
+    return data;
+  };
+
+  if (!user) {
+    return <Loading />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       <div className="max-w-6xl mx-auto p-6">

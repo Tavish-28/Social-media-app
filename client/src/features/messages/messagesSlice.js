@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import Messages from "../../pages/Messages";
-const initalState = {
+
+const initialState = {
   messages: [],
 };
+
 const messagesSlice = createSlice({
   name: "messages",
   initialState,

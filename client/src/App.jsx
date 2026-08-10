@@ -14,11 +14,13 @@ import SignUpPage from "./pages/SignUpPage";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { Toaster } from "react-hot-toast";
 import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { fetchUser } from "./features/user/userSlice";
+import Loading from "./components/Loading";
 // import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 
 function App() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
 
   const dispatch = useDispatch();
@@ -29,8 +31,12 @@ function App() {
         dispatch(fetchUser(token));
       }
     };
-    fetchUser();
-  }, [user, token, dispatch]);
+    fetchData();
+  }, [user, getToken, dispatch]);
+
+  if (!isLoaded) {
+    return <Loading />;
+  }
 
   return (
     <>

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import SideBar from "../components/SideBar";
-import { Outlet, Navigate } from "react-router-dom";
-import { dummyUserData } from "../assets/assets";
+import { Outlet } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { X } from "lucide-react";
 import { useSelector } from "react-redux";
+import Loading from "../components/Loading";
 
 const LayOut = () => {
   const user = useSelector((state) => state.user.value);
@@ -29,7 +29,7 @@ const LayOut = () => {
       )}
     </div>
   ) : (
-    <Navigate to="/login" replace />
+    <Loading />
   );
 };
 

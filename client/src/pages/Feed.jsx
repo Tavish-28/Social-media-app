@@ -1,21 +1,41 @@
-import React, { useEffect, useState } from "react";
-import { dummyPostsData } from "../assets/assets";
+import React, { useCallback, useEffect, useState } from "react";
 import Loading from "../components/Loading";
 import StoriesBar from "../components/StoriesBar";
 import PostCard from "../components/PostCards";
 import { assets } from "../assets/assets";
 import RecentMessages from "../components/RecentMessages";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../api/axios";
+import toast from "react-hot-toast";
+
 const Feed = () => {
   const [feeds, setfeeds] = useState([]);
   const [loading, setLoading] = useState(true);
-  const fetchFeeds = async () => {
-    setfeeds(dummyPostsData);
+  const { getToken } = useAuth();
 
-    setLoading(false);
-  };
+  const fetchFeeds = useCallback(async () => {
+    try {
+      const token = await getToken();
+      const { data } = await api.get("/api/post/feed", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        setfeeds(data.posts);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [getToken]);
+
   useEffect(() => {
     fetchFeeds();
-  }, []);
+  }, [fetchFeeds]);
+
   return !loading ? (
     <div className="h-full overflow-y-scroll no-scrollbar py-10 xl:pr-5 flex items-start justify-center xl:gap-8">
       {/** Stories and Post list */}

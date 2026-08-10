@@ -1,30 +1,69 @@
 import React, { useState } from "react";
 import moment from "moment";
 import { BadgeCheck, Heart, MessageCircle, Share2 } from "lucide-react";
-// import { dummyUserData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const PostCard = ({ post }) => {
   const currentUser = useSelector((state) => state.user.value);
   const navigate = useNavigate();
+  const { getToken } = useAuth();
 
-  // likes should be an array of user IDs
   const [likes, setLikes] = useState(post.likes || post.likes_count || []);
 
-  const handleLikes = () => {
-    if (likes.includes(currentUser._id)) {
-      setLikes(likes.filter((id) => id !== currentUser._id));
-    } else {
-      setLikes([...likes, currentUser._id]);
+  const handleLikes = async () => {
+    if (!currentUser) return;
+
+    const currentUserId = currentUser.id || currentUser._id;
+    const previousLikes = likes;
+    const nextLikes = likes.includes(currentUserId)
+      ? likes.filter((id) => id !== currentUserId)
+      : [...likes, currentUserId];
+
+    setLikes(nextLikes);
+
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        `/api/post/like/${post._id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      if (!data.success) {
+        throw new Error(data.message || "Could not update like");
+      }
+
+      if (typeof data.liked === "boolean") {
+        setLikes((currentLikes) => {
+          const hasLike = currentLikes.includes(currentUserId);
+          if (data.liked && !hasLike) return [...currentLikes, currentUserId];
+          if (!data.liked && hasLike) {
+            return currentLikes.filter((id) => id !== currentUserId);
+          }
+          return currentLikes;
+        });
+      }
+    } catch (error) {
+      setLikes(previousLikes);
+      toast.error(error.message);
     }
   };
 
+  if (!post.user) {
+    return null;
+  }
+
+  const profileId = post.user.id || post.user._id;
+  const currentUserId = currentUser?.id || currentUser?._id;
+
   return (
     <div className="bg-white rounded-xl shadow p-4 space-y-4 w-full max-w-2xl">
-      {/* User Info */}
       <div
-        onClick={() => navigate(`/profile/${post.user._id}`)}
+        onClick={() => profileId && navigate(`/profile/${profileId}`)}
         className="flex items-center gap-3 cursor-pointer"
       >
         <img
@@ -48,7 +87,6 @@ const PostCard = ({ post }) => {
         </div>
       </div>
 
-      {/* Content */}
       {post.content && (
         <div className="text-gray-800 text-sm whitespace-pre-line">
           {post.content.split(/(#\w+)/g).map((part, index) =>
@@ -63,12 +101,11 @@ const PostCard = ({ post }) => {
         </div>
       )}
 
-      {/* Images */}
       {post.image_urls?.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
           {post.image_urls.map((img, index) => (
             <img
-              key={index}
+              key={img}
               src={img}
               alt={`Post ${index + 1}`}
               className={`w-full rounded-lg object-cover ${
@@ -79,28 +116,26 @@ const PostCard = ({ post }) => {
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex items-center gap-6 text-gray-600 text-sm pt-2 border-t border-gray-200">
-        {/* Like */}
         <div
           className="flex items-center gap-1 cursor-pointer"
           onClick={handleLikes}
         >
           <Heart
             className={`w-5 h-5 transition ${
-              likes.includes(currentUser._id) ? "text-red-500 fill-red-500" : ""
+              currentUserId && likes.includes(currentUserId)
+                ? "text-red-500 fill-red-500"
+                : ""
             }`}
           />
           <span>{likes.length}</span>
         </div>
 
-        {/* Comments */}
         <div className="flex items-center gap-1 cursor-pointer">
           <MessageCircle className="w-5 h-5" />
           <span>{post.comments_count || post.comments?.length || 0}</span>
         </div>
 
-        {/* Share */}
         <div className="flex items-center gap-1 cursor-pointer">
           <Share2 className="w-5 h-5" />
           <span>Share</span>

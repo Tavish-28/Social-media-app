@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-const initalState = {
+import toast from "react-hot-toast";
+import api from "../../api/axios";
+
+const initialState = {
   value: null,
 };
 export const fetchUser = createAsyncThunk("user/fetchUser", async (token) => {
