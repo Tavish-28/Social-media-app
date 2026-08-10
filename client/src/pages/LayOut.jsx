@@ -4,9 +4,10 @@ import { Outlet, Navigate } from "react-router-dom";
 import { dummyUserData } from "../assets/assets";
 import { Menu } from "lucide-react";
 import { X } from "lucide-react";
+import { useSelector } from "react-redux";
 
 const LayOut = () => {
-  const user = dummyUserData;
+  const user = useSelector((state) => state.user.value);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return user ? (

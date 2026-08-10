@@ -11,12 +11,26 @@ import CreatePost from "./pages/CreatePost";
 import Login from "./pages/Login";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import { Toaster } from "react-hot-toast";
+import { useEffect } from "react";
+import { fetchUser } from "./features/user/userSlice";
 // import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 
 function App() {
   const { user } = useUser();
+  const { getToken } = useAuth();
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user) {
+        const token = await getToken();
+        dispatch(fetchUser(token));
+      }
+    };
+    fetchUser();
+  }, [user, token, dispatch]);
 
   return (
     <>

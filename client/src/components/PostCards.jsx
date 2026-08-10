@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import moment from "moment";
 import { BadgeCheck, Heart, MessageCircle, Share2 } from "lucide-react";
-import { dummyUserData } from "../assets/assets";
+// import { dummyUserData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const PostCard = ({ post }) => {
-  const currentUser = dummyUserData;
+  const currentUser = useSelector((state) => state.user.value);
   const navigate = useNavigate();
 
   // likes should be an array of user IDs
