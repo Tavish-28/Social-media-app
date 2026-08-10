@@ -12,6 +12,21 @@ export const addUserStory = async (req, res) => {
     const { content, media_type, background_color } = req.body;
     const media = req.file;
     let media_url = "";
+
+    if (!["text", "image", "video"].includes(media_type)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid story type",
+      });
+    }
+
+    if (media_type === "text" && !content?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Text is required for text stories",
+      });
+    }
+
     //upload mediato imagekit
     if ((media_type === "image" || media_type === "video") && !media) {
       return res.status(400).json({
@@ -36,15 +51,30 @@ export const addUserStory = async (req, res) => {
       media_type,
       background_color,
     });
+
     // schedule story deleteion after 24 hrs
-    await inngest.send({
-      name: "app/story.delete",
-      data: { storyId: story._id },
+    inngest
+      .send({
+        name: "app/story.delete",
+        data: { storyId: story._id },
+      })
+      .catch((error) => {
+        console.error("Unable to schedule story deletion:", error);
+      });
+
+    const author = await User.findOne({ id: userId }).lean();
+
+    res.json({
+      success: true,
+      message: "Story created successfully",
+      story: {
+        ...story.toObject(),
+        user: author,
+      },
     });
-    res.json({ success: true });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

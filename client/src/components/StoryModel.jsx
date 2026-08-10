@@ -1,11 +1,13 @@
 import { Sparkle, Upload } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 // import { File, Video } from "lucide-react";
 import { ArrowLeft } from "lucide-react";
 import { TextIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../api/axios";
 
-const StoryModel = ({ setShowModel }) => {
+const StoryModel = ({ setShowModel, onStoryCreated }) => {
   const bgColors = [
     "#4f46e5",
     "#7c3aed",
@@ -20,6 +22,7 @@ const StoryModel = ({ setShowModel }) => {
   const [text, setText] = useState("");
   const [media, setMedia] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const { getToken } = useAuth();
 
   const handleMediaUpload = (e) => {
     const file = e.target.files?.[0];
@@ -29,7 +32,57 @@ const StoryModel = ({ setShowModel }) => {
       setPreviewUrl(URL.createObjectURL(file));
     }
   };
-  const handleCreateStory = async () => {};
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleCreateStory = async () => {
+    const trimmedText = text.trim();
+    const mediaType = media?.type.startsWith("image")
+      ? "image"
+      : media?.type.startsWith("video")
+        ? "video"
+        : "text";
+
+    if (mode === "text" && !trimmedText) {
+      throw new Error("Add text before creating a story");
+    }
+
+    if (mode === "media" && !media) {
+      throw new Error("Choose an image or video before creating a story");
+    }
+
+    if (mode === "media" && mediaType === "text") {
+      throw new Error("Only image and video files are supported");
+    }
+
+    const formData = new FormData();
+    formData.append("content", trimmedText);
+    formData.append("media_type", mode === "media" ? mediaType : "text");
+    formData.append("background_color", background);
+
+    if (media) {
+      formData.append("media", media);
+    }
+
+    const token = await getToken();
+    const { data } = await api.post("/api/story/create", formData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!data.success) {
+      throw new Error(data.message || "Story not added");
+    }
+
+    await onStoryCreated?.(data.story);
+    setShowModel(false);
+    return data;
+  };
 
   return (
     <div className="fixed inset-0 z-110 min-h-screen bg-black/80 backdrop-blur text-white flex items-center justify-center p-4">
@@ -74,6 +127,15 @@ const StoryModel = ({ setShowModel }) => {
               ></video>
             ))}
         </div>
+        {mode === "media" && (
+          <textarea
+            className="mt-3 w-full rounded bg-white/10 p-3 text-sm text-white resize-none focus:outline-none placeholder-white/60"
+            rows={3}
+            placeholder="Add text to your story"
+            onChange={(e) => setText(e.target.value)}
+            value={text}
+          />
+        )}
         <div className="flex mt-4 gap-2">
           {bgColors.map((color) => (
             <button

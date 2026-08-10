@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { dummyStoriesData } from "../assets/assets";
+import React, { useCallback, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import moment from "moment";
 import StoryModel from "./StoryModel";
 import StoryViewer from "./StoryViewer";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 // import { Store} from "lucide-react";
 
@@ -11,14 +13,44 @@ const StoriesBar = () => {
   const [stories, setStories] = useState([]);
   const [showModel, setShowModel] = useState(false);
   const [viewStory, setViewStory] = useState(null);
+  const { getToken } = useAuth();
 
-  const fetchStories = async () => {
-    setStories(dummyStoriesData);
-  };
+  const fetchStories = useCallback(async () => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post("/api/story/get", null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        setStories(data.stories);
+      } else {
+        toast.error(data.message || "Could not load stories");
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  }, [getToken]);
 
   useEffect(() => {
     fetchStories();
-  }, []);
+  }, [fetchStories]);
+
+  const handleStoryCreated = useCallback(
+    async (story) => {
+      if (story) {
+        setStories((previousStories) => [
+          story,
+          ...previousStories.filter(
+            (previousStory) => previousStory._id !== story._id,
+          ),
+        ]);
+      }
+
+      await fetchStories();
+    },
+    [fetchStories],
+  );
  
   return (
     <div className="w-screen sm:w-[calc(100vw-240px)] lg:max-w-2xl no-scrollbar overflow-x-auto px-4">
@@ -82,7 +114,10 @@ const StoriesBar = () => {
       </div>
       {/**Add story model */}
       {showModel && (
-        <StoryModel setShowModel={setShowModel} />
+        <StoryModel
+          setShowModel={setShowModel}
+          onStoryCreated={handleStoryCreated}
+        />
       )}
       {/**view story model */}
       {viewStory && (
