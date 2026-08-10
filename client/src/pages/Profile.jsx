@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { MapPin, Calendar, Users, FileText, Edit } from "lucide-react";
+import { MapPin, Calendar, Users, FileText, Edit, X } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import api from "../api/axios";
+import { updateUser } from "../features/user/userSlice";
 
 const Profile = () => {
   const currentUser = useSelector((state) => state.user.value);
+  const dispatch = useDispatch();
   const { getToken } = useAuth();
   const { profileId } = useParams();
 
@@ -15,29 +17,46 @@ const Profile = () => {
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("posts");
   const [showEdit, setShowEdit] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [editForm, setEditForm] = useState({
+    full_name: "",
+    username: "",
+    bio: "",
+    location: "",
+  });
+  const [profileFile, setProfileFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
 
-  const fetchProfile = useCallback(async (profileId) => {
-    if (!profileId) return;
+  const isOwnProfile =
+    currentUser &&
+    user &&
+    (currentUser._id === user._id || currentUser.id === user.id);
 
-    const token = await getToken();
-    try {
-      const { data } = await api.post(
-        `/api/user/profiles`,
-        { profile_id: profileId },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      if (data.success) {
-        setUser(data.profile);
-        setPosts(data.posts);
-      } else {
-        toast.error(data.message);
+  const fetchProfile = useCallback(
+    async (profileId) => {
+      if (!profileId) return;
+
+      const token = await getToken();
+      try {
+        const { data } = await api.post(
+          `/api/user/profiles`,
+          { profile_id: profileId },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        if (data.success) {
+          setUser(data.profile);
+          setPosts(data.posts);
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error(error.message);
       }
-    } catch (error) {
-      toast.error(error.message);
-    }
-  }, [getToken]);
+    },
+    [getToken],
+  );
 
   useEffect(() => {
     if (profileId) {
@@ -46,6 +65,50 @@ const Profile = () => {
       fetchProfile(currentUser?._id);
     }
   }, [profileId, currentUser?._id, fetchProfile]);
+
+  const openEditProfile = () => {
+    setEditForm({
+      full_name: user.full_name || "",
+      username: user.username || "",
+      bio: user.bio || "",
+      location: user.location || "",
+    });
+    setProfileFile(null);
+    setCoverFile(null);
+    setShowEdit(true);
+  };
+
+  const handleEditChange = (event) => {
+    const { name, value } = event.target;
+    setEditForm((form) => ({ ...form, [name]: value }));
+  };
+
+  const handleEditSubmit = async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData();
+    formData.append("full_name", editForm.full_name);
+    formData.append("username", editForm.username);
+    formData.append("bio", editForm.bio);
+    formData.append("location", editForm.location);
+
+    if (profileFile) formData.append("profile", profileFile);
+    if (coverFile) formData.append("cover", coverFile);
+
+    setSavingProfile(true);
+    try {
+      const token = await getToken();
+      const updatedUser = await dispatch(
+        updateUser({ userData: formData, token }),
+      ).unwrap();
+      setUser(updatedUser);
+      setShowEdit(false);
+    } catch {
+      // The Redux thunk already displays the server error.
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -89,13 +152,15 @@ const Profile = () => {
                 </div>
               </div>
 
-              <button
-                onClick={() => setShowEdit(true)}
-                className="mt-4 md:mt-0 flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700"
-              >
-                <Edit size={18} />
-                Edit Profile
-              </button>
+              {isOwnProfile && (
+                <button
+                  onClick={openEditProfile}
+                  className="mt-4 md:mt-0 flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700"
+                >
+                  <Edit size={18} />
+                  Edit Profile
+                </button>
+              )}
             </div>
 
             {/* Bio */}
@@ -255,43 +320,106 @@ const Profile = () => {
       </div>
 
       {/* Edit Profile Modal */}
-      {showEdit && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white w-[90%] max-w-md rounded-xl p-6">
-            <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
+      {showEdit && isOwnProfile && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <form
+            onSubmit={handleEditSubmit}
+            className="bg-white w-full max-w-md rounded-xl p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Edit Profile</h2>
+              <button
+                type="button"
+                onClick={() => setShowEdit(false)}
+                className="p-2 rounded-full hover:bg-slate-100"
+                aria-label="Close edit profile"
+              >
+                <X size={18} />
+              </button>
+            </div>
 
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Full name
+            </label>
             <input
-              defaultValue={user.full_name}
+              name="full_name"
+              value={editForm.full_name}
+              onChange={handleEditChange}
               className="w-full border rounded-lg p-3 mb-3"
+              required
             />
 
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Username
+            </label>
+            <input
+              name="username"
+              value={editForm.username}
+              onChange={handleEditChange}
+              className="w-full border rounded-lg p-3 mb-3"
+              required
+            />
+
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Bio
+            </label>
             <textarea
-              defaultValue={user.bio}
+              name="bio"
+              value={editForm.bio}
+              onChange={handleEditChange}
               rows={4}
+              className="w-full border rounded-lg p-3 mb-3 resize-none"
+            />
+
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Location
+            </label>
+            <input
+              name="location"
+              value={editForm.location}
+              onChange={handleEditChange}
               className="w-full border rounded-lg p-3 mb-3"
             />
 
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Profile picture
+            </label>
             <input
-              defaultValue={user.location}
+              type="file"
+              accept="image/*"
+              onChange={(event) => setProfileFile(event.target.files?.[0])}
+              className="w-full border rounded-lg p-3 mb-3"
+            />
+
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Cover photo
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(event) => setCoverFile(event.target.files?.[0])}
               className="w-full border rounded-lg p-3 mb-5"
             />
 
             <div className="flex justify-end gap-3">
               <button
+                type="button"
                 onClick={() => setShowEdit(false)}
-                className="px-4 py-2 rounded-lg border"
+                disabled={savingProfile}
+                className="px-4 py-2 rounded-lg border disabled:opacity-60"
               >
                 Cancel
               </button>
 
               <button
-                onClick={() => setShowEdit(false)}
-                className="px-4 py-2 rounded-lg bg-indigo-600 text-white"
+                type="submit"
+                disabled={savingProfile}
+                className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
               >
-                Save
+                {savingProfile ? "Saving..." : "Save"}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>
