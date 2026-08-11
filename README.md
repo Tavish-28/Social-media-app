@@ -4,6 +4,12 @@ A full-stack social media application where users can sign up, discover people, 
 
 The app uses **Clerk** for authentication, **MongoDB** for data storage, **ImageKit** for media uploads, and **Inngest** for background workflows.
 
+    ##Live Demo
+
+    Visit the deployed app here:
+
+    [https://social-media-app-p8ve.vercel.app/](https://social-media-app-p8ve.vercel.app/)
+
 ## Features
 
 - User authentication with Clerk
@@ -18,15 +24,15 @@ The app uses **Clerk** for authentication, **MongoDB** for data storage, **Image
 
 ## Tech Stack
 
-| Area | Technology |
-| --- | --- |
-| Frontend | React, Vite, Tailwind CSS |
-| Backend | Node.js, Express |
-| Database | MongoDB, Mongoose |
-| Authentication | Clerk |
-| Media Storage | ImageKit |
-| Background Jobs | Inngest |
-| Email | Nodemailer / SMTP |
+| Area            | Technology                |
+| --------------- | ------------------------- |
+| Frontend        | React, Vite, Tailwind CSS |
+| Backend         | Node.js, Express          |
+| Database        | MongoDB, Mongoose         |
+| Authentication  | Clerk                     |
+| Media Storage   | ImageKit                  |
+| Background Jobs | Inngest                   |
+| Email           | Nodemailer / SMTP         |
 
 ## Screenshots
 
