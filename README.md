@@ -1,12 +1,15 @@
 An Social Media app
 
 ~ This is an sicial media app
+
 ~ Here first you need to sign up (I have used the CLERK for the autentication )
+
 ~ After the signup You would see the home-page like this
 
 ![alt text](images/image.png)
 
 ~Initially there would be no recent messages section Since you have not followed anyone
+
 ~Than you need to go to the Discover section you would be seeing a page like this
 
 ![alt text](images/image-1.png)
@@ -20,6 +23,7 @@ An Social Media app
 ~Sometimes if the server is slow than it could show the Loading,Like: this
 
 ~No need to worry it would be gone once the data is retrieved from the server
+
 ~ Click the message icon beside every contact
 ~you would be directed to a page like
 
@@ -33,4 +37,4 @@ An Social Media app
 
 ~ You could edit the profile by clicking the "Edit profile " button
 
-![alt text](images/image-9.png)
+![alt text](images/image10.png)
