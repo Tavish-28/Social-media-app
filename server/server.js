@@ -19,6 +19,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({ success: true, message: "Server is running" });
+});
+
 const requireDatabase = async (req, res, next) => {
   try {
     await connectDB();
@@ -47,13 +55,18 @@ app.use(clerkMiddleware());
 
 app.use("/api/user", requireDatabase, userRouter);
 
-app.get("/", (req, res) => {
-  res.send("Server is running");
-});
-
 app.use("/api/post", requireDatabase, postRouter);
 app.use("/api/story", requireDatabase, storyRouter);
 app.use("/api/message", requireDatabase, messageRouter);
+
+app.use((error, req, res, next) => {
+  console.error("Unhandled request error:", error);
+  res.status(500).json({
+    success: false,
+    message: process.env.NODE_ENV === "production" ? "Server error" : error.message,
+  });
+});
+
 const PORT = process.env.PORT || 4000;
 
 if (!process.env.VERCEL) {
