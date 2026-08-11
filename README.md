@@ -38,3 +38,64 @@ An Social Media app
 ~ You could edit the profile by clicking the "Edit profile " button
 
 ![alt text](images/image10.png)
+
+@@ Setting up the project on local System:
+
+1. Install Dependencies
+
+Open terminal in project root:
+
+cd "C:\Users\Administrator\Desktop\social media app"
+
+cd server
+npm install
+
+cd ..\client
+npm install
+
+2. Create server/.env
+
+PORT=4000
+FRONTEND_URL=http://localhost:5173
+
+MONGODB_URL=your_mongodb_connection_string
+INNGEST_EVENT_KEY=your_inngest_event_key
+INNGEST_SIGNING_KEY=your_inngest_signing_key
+
+CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+
+IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
+IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
+IMAGEKIT_URL_ENDPOINT=your_imagekit_url_endpoint
+
+SENDER_EMAIL=your_sender_email
+SMTP_USER=your_smtp_user
+SMTP_PASS=your_smtp_password
+
+3. Create client/.env
+
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+VITE_BASEURL=http://localhost:4000
+
+4. Start Backend
+
+In one terminal:
+
+cd server
+npm run server
+
+Backend runs on:
+
+http://localhost:4000
+
+5. Start Frontend
+
+In another terminal:
+
+cd client
+npm run dev
+
+Frontend runs on:
+
+http://localhost:5173
