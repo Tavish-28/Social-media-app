@@ -1,37 +1,119 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 import {
-  Search,
+  Loader2,
   MapPin,
-  Users,
-  UserPlus,
-  UserCheck,
-  MessageCircle,
   Plus,
+  Search,
+  UserCheck,
+  UserPlus,
+  Users,
 } from "lucide-react";
-import { dummyConnectionsData, dummyFollowingData } from "../assets/assets";
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import api from "../api/axios";
+import {
+  fetchConnections,
+  followUser,
+  sendConnectionRequest,
+  unfollowUser,
+} from "../features/connections/connectionSlice";
+
+const getUserKey = (user) => user?.id || user?._id;
+
+function Avatar({ user }) {
+  const initials = (user?.full_name || user?.username || "U")
+    .trim()
+    .slice(0, 2)
+    .toUpperCase();
+
+  if (user?.profile_picture) {
+    return (
+      <img
+        src={user.profile_picture}
+        alt={user.full_name || user.username}
+        className="w-16 h-16 rounded-full object-cover bg-slate-100"
+      />
+    );
+  }
+
+  return (
+    <div className="w-16 h-16 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-lg font-semibold">
+      {initials}
+    </div>
+  );
+}
 
 export default function Discover() {
   const [query, setQuery] = useState("");
-  const [followingIds, setFollowingIds] = useState(
-    dummyFollowingData.map((user) => user._id),
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { getToken } = useAuth();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const following = useSelector((state) => state.connections.following);
+
+  const followingIds = useMemo(
+    () => new Set(following.map((user) => getUserKey(user))),
+    [following],
   );
 
-  const toggleFollow = (id) => {
-    setFollowingIds((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id],
-    );
+  useEffect(() => {
+    const loadConnections = async () => {
+      const token = await getToken();
+      dispatch(fetchConnections(token));
+    };
+
+    loadConnections();
+  }, [dispatch, getToken]);
+
+  useEffect(() => {
+    const searchUsers = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const token = await getToken();
+        const { data } = await api.get("/api/user/discover", {
+          params: { input: query.trim() },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!data.success) {
+          setUsers([]);
+          setError(data.message || "Could not search users");
+          return;
+        }
+
+        setUsers(data.users || []);
+      } catch (err) {
+        const message = err.response?.data?.message || err.message;
+        setUsers([]);
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchUsers, 300);
+    return () => clearTimeout(timeoutId);
+  }, [query, getToken]);
+
+  const runUserAction = async (action, id) => {
+    if (!id) return;
+    const token = await getToken();
+    dispatch(action({ id, token }));
   };
 
-  const q = query.trim().toLowerCase();
-  const filteredUsers = dummyConnectionsData.filter((user) => {
-    if (!q) return true;
-    return (
-      user.full_name.toLowerCase().includes(q) ||
-      user.username.toLowerCase().includes(q) ||
-      user.bio.toLowerCase().includes(q) ||
-      user.location.toLowerCase().includes(q)
-    );
-  });
+  const openProfile = (id) => {
+    if (!id) {
+      toast.error("Profile is missing");
+      return;
+    }
+
+    navigate(`/profile/${id}`);
+  };
 
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-800">
@@ -41,11 +123,10 @@ export default function Discover() {
             Discover People
           </h1>
           <p className="text-sm text-slate-400">
-            Connect with amazing people and grow your network
+            Search people by name, username, email, or location
           </p>
         </header>
 
-        {/* Search */}
         <div className="relative mb-8">
           <Search
             size={18}
@@ -55,52 +136,76 @@ export default function Discover() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search people by name, username, bio, or location..."
+            placeholder="Search people..."
             className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
           />
         </div>
 
-        {/* People grid */}
-        {filteredUsers.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 py-12 text-sm text-slate-500">
+            <Loader2 size={18} className="animate-spin" />
+            Searching people
+          </div>
+        ) : error ? (
+          <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+            {error}
+          </p>
+        ) : users.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredUsers.map((user) => {
-              const isFollowing = followingIds.includes(user._id);
+            {users.map((user) => {
+              const userId = getUserKey(user);
+              const isFollowing = followingIds.has(userId);
               return (
                 <div
-                  key={user._id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col items-center gap-3 text-center"
+                  key={userId}
+                  className="rounded-lg border border-slate-200 bg-white p-5 flex flex-col items-center gap-3 text-center"
                 >
-                  <img
-                    src={user.profile_picture}
-                    alt={user.full_name}
-                    className="w-16 h-16 rounded-full object-cover bg-slate-100"
-                  />
+                  <button type="button" onClick={() => openProfile(userId)}>
+                    <Avatar user={user} />
+                  </button>
 
-                  <div>
-                    <p className="font-semibold text-slate-800">
-                      {user.full_name}
+                  <div className="min-w-0 max-w-full">
+                    <p className="font-semibold text-slate-800 truncate">
+                      {user.full_name || "Unnamed user"}
                     </p>
-                    <p className="text-sm text-slate-400">@{user.username}</p>
+                    <p className="text-sm text-slate-400 truncate">
+                      @{user.username || "user"}
+                    </p>
                   </div>
 
-                  <p className="text-xs text-slate-400">{user.bio}</p>
+                  {user.bio ? (
+                    <p className="text-xs text-slate-400 line-clamp-2">
+                      {user.bio}
+                    </p>
+                  ) : null}
 
                   <div className="flex flex-wrap items-center justify-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-500">
-                      <MapPin size={12} />
-                      {user.location}
-                    </span>
+                    {user.location ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-500">
+                        <MapPin size={12} />
+                        {user.location}
+                      </span>
+                    ) : null}
                     <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-500">
                       <Users size={12} />
-                      {user.followers.length} Followers
+                      {(user.followers || []).length} Followers
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 w-full mt-2">
                     <button
                       type="button"
-                      onClick={() => toggleFollow(user._id)}
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+                      onClick={() =>
+                        runUserAction(
+                          isFollowing ? unfollowUser : followUser,
+                          userId,
+                        )
+                      }
+                      className={`flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-medium transition-colors ${
+                        isFollowing
+                          ? "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                          : "bg-violet-600 text-white hover:bg-violet-700"
+                      }`}
                     >
                       {isFollowing ? (
                         <UserCheck size={16} />
@@ -111,13 +216,11 @@ export default function Discover() {
                     </button>
                     <button
                       type="button"
+                      onClick={() => runUserAction(sendConnectionRequest, userId)}
                       className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors"
+                      title="Send connection request"
                     >
-                      {isFollowing ? (
-                        <MessageCircle size={16} />
-                      ) : (
-                        <Plus size={16} />
-                      )}
+                      <Plus size={16} />
                     </button>
                   </div>
                 </div>

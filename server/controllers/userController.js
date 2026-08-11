@@ -359,7 +359,14 @@ export const getUserConnections = async (req, res) => {
       (connection) => connection.from_user_id,
     );
     const people = await User.find({
-      id: { $in: [...connectionIds, ...pendingIds] },
+      id: {
+        $in: [
+          ...connectionIds,
+          ...pendingIds,
+          ...user.followers,
+          ...user.following,
+        ],
+      },
     });
     const peopleById = new Map(people.map((person) => [person.id, person]));
 
@@ -369,11 +376,18 @@ export const getUserConnections = async (req, res) => {
     const pendingConnections = pendingIds
       .map((id) => peopleById.get(id))
       .filter(Boolean);
+    const followers = user.followers
+      .map((id) => peopleById.get(id))
+      .filter(Boolean);
+    const following = user.following
+      .map((id) => peopleById.get(id))
+      .filter(Boolean);
+
     res.json({
       success: true,
       connections,
-      followers: user.followers,
-      following: user.following,
+      followers,
+      following,
       pendingConnections,
     });
   } catch (error) {

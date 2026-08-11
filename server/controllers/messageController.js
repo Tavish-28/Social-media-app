@@ -134,20 +134,37 @@ export const getChatMessages = async (req, res) => {
 export const getUserRecentMessage = async (req, res) => {
   try {
     const { userId } = req.auth();
-    const messages = await Message.find({ to_user_id: userId })
+    const messages = await Message.find({
+      $or: [{ from_user_id: userId }, { to_user_id: userId }],
+    })
       .sort({ createdAt: -1 })
       .lean();
 
-    const senderIds = [...new Set(messages.map(({ from_user_id }) => from_user_id))];
-    const users = await User.find({ id: { $in: senderIds } }).lean();
+    const recentByUserId = new Map();
+
+    messages.forEach((message) => {
+      const otherUserId =
+        message.from_user_id === userId
+          ? message.to_user_id
+          : message.from_user_id;
+
+      if (!recentByUserId.has(otherUserId)) {
+        recentByUserId.set(otherUserId, message);
+      }
+    });
+
+    const otherUserIds = [...recentByUserId.keys()];
+    const users = await User.find({ id: { $in: otherUserIds } }).lean();
     const usersById = new Map(users.map((user) => [user.id, user]));
 
     res.json({
       success: true,
-      messages: messages.map((message) => ({
-        ...message,
-        from_user_id: usersById.get(message.from_user_id) ?? null,
-      })),
+      messages: [...recentByUserId.entries()]
+        .map(([otherUserId, message]) => ({
+          ...message,
+          user: usersById.get(otherUserId) ?? null,
+        }))
+        .filter((message) => message.user),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
