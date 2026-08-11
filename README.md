@@ -1,60 +1,104 @@
-An Social Media app
+# Social Media App
 
-~ This is an sicial media app
+A full-stack social media application where users can sign up, discover people, follow other users, create posts and stories, send messages, and manage their profile.
 
-~ Here first you need to sign up (I have used the CLERK for the autentication )
+The app uses **Clerk** for authentication, **MongoDB** for data storage, **ImageKit** for media uploads, and **Inngest** for background workflows.
 
-~ After the signup You would see the home-page like this
+## Features
 
-![alt text](images/image.png)
+- User authentication with Clerk
+- Personalized home feed
+- Discover and follow users
+- Recent messages section
+- One-to-one messaging
+- Profile view and profile editing
+- Post and story support
+- Image upload support with ImageKit
+- Email/background workflow support with Inngest and SMTP
 
-~Initially there would be no recent messages section Since you have not followed anyone
+## Tech Stack
 
-~Than you need to go to the Discover section you would be seeing a page like this
+| Area | Technology |
+| --- | --- |
+| Frontend | React, Vite, Tailwind CSS |
+| Backend | Node.js, Express |
+| Database | MongoDB, Mongoose |
+| Authentication | Clerk |
+| Media Storage | ImageKit |
+| Background Jobs | Inngest |
+| Email | Nodemailer / SMTP |
 
-![alt text](images/image-1.png)
+## Screenshots
 
-~After following few people
+### Home
 
-~ go to messages section it would look like
+After signing up, users land on the home page.
 
-![alt text](images/image-2.png)
+![Home page](images/image.png)
 
-~Sometimes if the server is slow than it could show the Loading,Like: this
+### Discover
 
-~No need to worry it would be gone once the data is retrieved from the server
+Users can discover and follow other people from the Discover section.
 
-~ Click the message icon beside every contact
-~you would be directed to a page like
+![Discover page](images/image-1.png)
 
-![alt text](images/image-4.png)
+### Messages
 
-~ In the Profile section you would see
+After following users, recent messages and contacts become available.
 
-![alt text](images/image-6.png)
+![Messages page](images/image-2.png)
 
-![alt text](images/image-7.png)
+### Chat
 
-~ You could edit the profile by clicking the "Edit profile " button
+Click the message icon beside a contact to open the chat page.
 
-![alt text](images/image10.png)
+![Chat page](images/image-4.png)
 
-@@ Setting up the project on local System:
+### Profile
 
-1. Install Dependencies
+Users can view and manage their profile information.
 
-Open terminal in project root:
+![Profile page](images/image-6.png)
 
+![Profile details](images/image-7.png)
+
+### Edit Profile
+
+Users can edit their profile by clicking the **Edit profile** button.
+
+![Edit profile](images/image10.png)
+
+## Local Setup
+
+Follow these steps to run the project on your local system.
+
+### 1. Clone or Open the Project
+
+Open a terminal in the project root:
+
+```powershell
 cd "C:\Users\Administrator\Desktop\social media app"
+```
 
+### 2. Install Server Dependencies
+
+```powershell
 cd server
 npm install
+```
 
+### 3. Install Client Dependencies
+
+```powershell
 cd ..\client
 npm install
+```
 
-2. Create server/.env
+### 4. Configure Server Environment Variables
 
+Create a `.env` file inside the `server` folder:
+
+```env
 PORT=4000
 FRONTEND_URL=http://localhost:5173
 
@@ -72,30 +116,58 @@ IMAGEKIT_URL_ENDPOINT=your_imagekit_url_endpoint
 SENDER_EMAIL=your_sender_email
 SMTP_USER=your_smtp_user
 SMTP_PASS=your_smtp_password
+```
 
-3. Create client/.env
+### 5. Configure Client Environment Variables
 
+Create a `.env` file inside the `client` folder:
+
+```env
 VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 VITE_BASEURL=http://localhost:4000
+```
 
-4. Start Backend
+## Running the App
 
-In one terminal:
+Start the backend server:
 
+```powershell
 cd server
 npm run server
+```
 
-Backend runs on:
+The backend runs at:
 
+```text
 http://localhost:4000
+```
 
-5. Start Frontend
+Start the frontend in a second terminal:
 
-In another terminal:
-
+```powershell
 cd client
 npm run dev
+```
 
-Frontend runs on:
+The frontend runs at:
 
+```text
 http://localhost:5173
+```
+
+## Project Structure
+
+```text
+social media app/
+|-- client/      # React frontend
+|-- server/      # Express backend
+|-- images/      # README screenshots
+`-- README.md
+```
+
+## Important Notes
+
+- Keep `.env` files private and do not commit them to GitHub.
+- Make sure MongoDB is running or your MongoDB Atlas connection string is valid.
+- Clerk keys must match the Clerk application used by the frontend and backend.
+- If the server is slow, loading states may appear until data is retrieved.
