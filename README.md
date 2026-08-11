@@ -4,11 +4,13 @@ A full-stack social media application where users can sign up, discover people, 
 
 The app uses **Clerk** for authentication, **MongoDB** for data storage, **ImageKit** for media uploads, and **Inngest** for background workflows.
 
-    ##Live Demo
+## Live Demo
 
-    Visit the deployed app here:
+[Click here to view the live app](https://social-media-app-p8ve.vercel.app/)
 
-    [https://social-media-app-p8ve.vercel.app/](https://social-media-app-p8ve.vercel.app/)
+It will show as a direct clickable link on GitHub:
+
+Click here to view the live app (https://social-media-app-p8ve.vercel.app/)
 
 ## Features
 
